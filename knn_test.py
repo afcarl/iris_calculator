@@ -38,7 +38,7 @@ def model():
 		session['petal_width'] = form.petal_width.data
 		session['n_neighb'] = form.n_neighb.data
 		#Create array from values
-		flower_instance = [int(session['sepal_length']), int(session['sepal_width']), int(session['petal_length']), int(session['petal_width'])]
+		flower_instance = [(session['sepal_length']), (session['sepal_width']), (session['petal_length']), (session['petal_width'])]
 		#Fit model with n_neigh neighbors
 		knn = KNeighborsClassifier(n_neighbors=session['n_neighb'])
 		knn.fit(features, target)
