@@ -5,6 +5,7 @@ from wtforms import IntegerField, StringField, SubmitField, SelectField, Decimal
 from wtforms.validators import Required
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.datasets import load_iris
+import simplejson
 import sys
 import logging
 
