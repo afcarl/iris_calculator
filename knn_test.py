@@ -5,6 +5,8 @@ from wtforms import IntegerField, StringField, SubmitField, SelectField, Decimal
 from wtforms.validators import Required
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.datasets import load_iris
+import sys
+import logging
 
 #Load Iris Data
 iris_data = load_iris()
@@ -27,7 +29,6 @@ class theForm(Form):
 
 @app.route('/',methods=['GET', 'POST'])
 def model():
-	prediction = None
 	form = theForm(csrf_enabled=False)
 	if form.validate_on_submit():
 		#Retrieve values from form
@@ -57,6 +58,9 @@ def page_not_found(e):
 	return render_template('404.html'), 404
 
 app.secret_key = 'super_secret_key'
+
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.ERROR)
 
 if __name__ == '__main__':
     app.run(debug=True)    
