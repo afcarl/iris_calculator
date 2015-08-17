@@ -27,6 +27,7 @@ class theForm(Form):
 
 @app.route('/',methods=['GET', 'POST'])
 def model():
+	prediction = None
 	form = theForm(csrf_enabled=False)
 	if form.validate_on_submit():
 		#Retrieve values from form
