@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask.ext.wtf import Form
 from wtforms import IntegerField, StringField, SubmitField, SelectField, DecimalField
@@ -12,10 +12,6 @@ features = iris_data.data
 feature_names = iris_data.feature_names
 target = iris_data.target
 target_names = iris_data.target_names
-
-#Fit Model
-knn = KNeighborsClassifier(n_neighbors=3)
-knn.fit(features, target)
 
 #Initialize Flask App
 app = Flask(__name__)
@@ -31,29 +27,35 @@ class theForm(Form):
 
 @app.route('/',methods=['GET', 'POST'])
 def model():
-	prediction, sepal_length, sepal_width, petal_length, petal_width, n_neighb  = None, None, None, None, None, None
 	form = theForm(csrf_enabled=False)
 	if form.validate_on_submit():
 		#Retrieve values from form
-		sepal_length = form.sepal_length.data
-		sepal_width = form.sepal_width.data
-		petal_length = form.petal_length.data
-		petal_width = form.petal_width.data
-		n_neighb = form.n_neighb.data
+		session['sepal_length'] = form.sepal_length.data
+		session['sepal_width'] = form.sepal_width.data
+		session['petal_length'] = form.petal_length.data
+		session['petal_width'] = form.petal_width.data
+		session['n_neighb'] = form.n_neighb.data
 		#Create array from values
-		flower_instance = [int(sepal_length), int(sepal_width), int(petal_length), int(petal_width)]
+		flower_instance = [int(session['sepal_length']), int(session['sepal_width']), int(session['petal_length']), int(session['petal_width'])]
 		#Fit model with n_neigh neighbors
-		knn = KNeighborsClassifier(n_neighbors=n_neighb)
+		knn = KNeighborsClassifier(n_neighbors=session['n_neighb'])
 		knn.fit(features, target)
 		#Return only the Predicted iris species
-		prediction = target_names[knn.predict(flower_instance)][0].capitalize()
-	return render_template('model.html',form=form,prediction=prediction,sepal_length=sepal_length,
-							sepal_width=sepal_width,petal_length=petal_length,petal_width=petal_width,n_neighb=n_neighb)
+		session['prediction'] = target_names[knn.predict(flower_instance)][0].capitalize()
+		#Implement Post/Redirect/Get Pattern
+		return redirect(url_for('model'))
+
+	return render_template('model.html',form=form,
+							prediction=session.get('prediction'),n_neighb=session.get('n_neighb'),
+							sepal_length=session.get('sepal_length'),sepal_width=session.get('sepal_width'),
+							petal_length=session.get('petal_length'),petal_width=session.get('petal_width'))
 
 #Handle Bad Requests
 @app.errorhandler(404)
 def page_not_found(e):
 	return render_template('404.html'), 404
 
+app.secret_key = 'super_secret_key'
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True)    
