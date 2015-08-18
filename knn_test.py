@@ -53,6 +53,10 @@ def model():
 							sepal_length=session.get('sepal_length'),sepal_width=session.get('sepal_width'),
 							petal_length=session.get('petal_length'),petal_width=session.get('petal_width'))
 
+@app.route('/hello/<name>')
+def hello(name):
+	return render_template('name.html',name=name)
+
 #Handle Bad Requests
 @app.errorhandler(404)
 def page_not_found(e):
