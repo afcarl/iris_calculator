@@ -1,8 +1,10 @@
 """ Simple Flask App to Predict Iris Species"""
 
-import sys
 import logging
+import json
+import sys
 
+from flask import request
 from flask import Flask, render_template, session, redirect, url_for
 from flask.ext.wtf import Form
 from wtforms import SubmitField, SelectField, DecimalField
@@ -57,7 +59,30 @@ def model():
 	sepal_length=session.get('sepal_length'), sepal_width=session.get('sepal_width'), \
 	petal_length=session.get('petal_length'), petal_width=session.get('petal_width'))
 
-#Handle Bad Requests
+@app.route('/api/v1', methods=['GET'])
+def api():
+	"""API That returns JSON with request params and prediction"""
+	sepal_length = request.args.get('sepal_length', '')
+	sepal_width = request.args.get('sepal_width', '')
+	petal_length = request.args.get('petal_length', '')
+	petal_width = request.args.get('petal_width', '')
+	n_neighb = request.args.get('n_neighb', '')
+
+	try:
+		sepal_length, sepal_width, petal_length, petal_width, n_neighb = \
+		int(sepal_length), int(sepal_width), int(petal_length), int(petal_width), int(n_neighb)
+	except ValueError:
+		return 'Invalid Request Parameters\n', 400
+
+	flower_instance = [(sepal_length), (sepal_width),(petal_length), (petal_width)]
+	knn = KNeighborsClassifier(n_neighbors=n_neighb)
+	knn.fit(FEATURES, TARGET)
+	prediction = TARGET_NAMES[knn.predict(flower_instance)][0].capitalize()
+	response = {'sepal_length': sepal_length,'sepal_width': sepal_width,'petal_length': petal_length, \
+	'petal_width': petal_width,'n_neighb': n_neighb,'prediction': prediction}
+	# return render_template('404.html'), 404
+	return json.dumps(response)
+
 @app.errorhandler(404)
 def page_not_found(error):
 	"""Error Handler for bad routes"""
