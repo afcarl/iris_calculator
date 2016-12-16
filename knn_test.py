@@ -80,7 +80,6 @@ def api():
 	prediction = TARGET_NAMES[knn.predict(flower_instance)][0].capitalize()
 	response = {'sepal_length': sepal_length,'sepal_width': sepal_width,'petal_length': petal_length, \
 	'petal_width': petal_width,'n_neighb': n_neighb,'prediction': prediction}
-	# return render_template('404.html'), 404
 	return json.dumps(response)
 
 @app.errorhandler(404)
