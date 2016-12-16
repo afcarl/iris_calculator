@@ -1,7 +1,5 @@
 {% extends "layout.html" %}
-
-{% block body %}
-	
+{% block body %}	
 	<div class="content">
 		<h1>
 			{% if prediction %}
@@ -17,7 +15,6 @@
 			{% endif %}
 		</h1>
 	</div>
-
 	{% block page_content %}
 	<div class="content">
 		<form method="POST">
@@ -36,8 +33,4 @@
 		</form>
 	</div>
 	{% endblock %}
-
-
-<script> var i =  [1,2,3] </script>
 {% endblock %}
-
