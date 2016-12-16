@@ -4,13 +4,13 @@ import logging
 import json
 import sys
 
-from flask import request
 from flask import Flask, render_template, session, redirect, url_for
+from flask import request
 from flask.ext.wtf import Form
+from sklearn.datasets import load_iris
+from sklearn.neighbors import KNeighborsClassifier
 from wtforms import SubmitField, SelectField, DecimalField
 from wtforms.validators import Required
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.datasets import load_iris
 
 #Load Iris Data
 IRIS_DATA = load_iris()
@@ -70,7 +70,7 @@ def api():
 
 	try:
 		sepal_length, sepal_width, petal_length, petal_width, n_neighb = \
-		int(sepal_length), int(sepal_width), int(petal_length), int(petal_width), int(n_neighb)
+		float(sepal_length), float(sepal_width), float(petal_length), float(petal_width), int(n_neighb)
 	except ValueError:
 		return 'Invalid Request Parameters\n', 400
 
