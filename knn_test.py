@@ -1,7 +1,7 @@
 """ Simple Flask App to Predict Iris Species"""
 
-import logging
 import json
+import logging
 import sys
 
 from flask import Flask, render_template, session, redirect, url_for
