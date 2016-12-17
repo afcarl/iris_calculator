@@ -18,6 +18,22 @@ FEATURES = IRIS_DATA.data
 TARGET = IRIS_DATA.target
 TARGET_NAMES = IRIS_DATA.target_names
 
+def make_prediction(iris,n_neighbors):
+	''' iris format: [(sepal_length), (sepal_width),(petal_length), (petal_width)]'''
+	#Make Sure Types Are correct
+	iris = [float(i) for i in iris]
+	n_neighbors = int(n_neighbors)
+
+	#Fit Model and get prediction and response
+	knn = KNeighborsClassifier(n_neighbors=n_neighbors)
+	knn.fit(FEATURES, TARGET)
+	prediction = TARGET_NAMES[knn.predict(iris)][0].capitalize()
+	response = {'sepal_length': iris[0], 'sepal_width': iris[1], 'petal_length': iris[2], 
+	'petal_width': iris[3], 'prediction': prediction, 'n_neighbors': n_neighbors}
+
+	return prediction, response
+
+
 #Initialize Flask App
 app = Flask(__name__)
 
@@ -32,6 +48,7 @@ class IrisForm(Form):
 	petal_width = DecimalField('Petal Width (cm):', places=2, validators=[Required()])
 	submit = SubmitField('Submit')
 
+
 @app.route('/', methods=['GET', 'POST'])
 def model():
 	"""Flask Model defining / route"""
@@ -43,25 +60,28 @@ def model():
 		session['petal_length'] = form.petal_length.data
 		session['petal_width'] = form.petal_width.data
 		session['n_neighb'] = form.n_neighb.data
-		#Create array from values
-		flower_instance = [(session['sepal_length']), (session['sepal_width']), \
+		#Make Prediction
+		iris_instance = [(session['sepal_length']), (session['sepal_width']), \
 		(session['petal_length']), (session['petal_width'])]
-		#Fit model with n_neigh neighbors
-		knn = KNeighborsClassifier(n_neighbors=session['n_neighb'])
-		knn.fit(FEATURES, TARGET)
-		#Return only the Predicted iris species
-		session['prediction'] = TARGET_NAMES[knn.predict(flower_instance)][0].capitalize()
+		try:
+			session['prediction'], response = make_prediction(iris_instance,session['n_neighb'])
+		except:
+			return render_template('404.html'), 400
 		#Implement Post/Redirect/Get Pattern
 		return redirect(url_for('model'))
-
+	
 	return render_template('model.html', form=form, \
 	prediction=session.get('prediction'), n_neighb=session.get('n_neighb'), \
 	sepal_length=session.get('sepal_length'), sepal_width=session.get('sepal_width'), \
 	petal_length=session.get('petal_length'), petal_width=session.get('petal_width'))
 
+
 @app.route('/api/v1', methods=['GET'])
 def api():
-	"""API That returns JSON with request params and prediction"""
+	"""
+	API That returns JSON with request params and prediction.
+	curl 'http://127.0.0.1:5000/api/v1?sepal_length=2&sepal_width=2&petal_length=2&petal_width=2&n_neighb=2'
+	"""
 	sepal_length = request.args.get('sepal_length', '')
 	sepal_width = request.args.get('sepal_width', '')
 	petal_length = request.args.get('petal_length', '')
@@ -74,13 +94,11 @@ def api():
 	except ValueError:
 		return 'Invalid Request Parameters\n', 400
 
-	flower_instance = [(sepal_length), (sepal_width),(petal_length), (petal_width)]
-	knn = KNeighborsClassifier(n_neighbors=n_neighb)
-	knn.fit(FEATURES, TARGET)
-	prediction = TARGET_NAMES[knn.predict(flower_instance)][0].capitalize()
-	response = {'sepal_length': sepal_length,'sepal_width': sepal_width,'petal_length': petal_length, \
-	'petal_width': petal_width,'n_neighb': n_neighb,'prediction': prediction}
+	iris_instance = [(sepal_length), (sepal_width),(petal_length), (petal_width)]
+	prediction, response = make_prediction(iris_instance,n_neighb)
+	print json.dumps(response)
 	return json.dumps(response)
+
 
 @app.errorhandler(404)
 def page_not_found(error):
